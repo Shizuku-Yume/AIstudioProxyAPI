@@ -22,10 +22,18 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    # 新增步骤：提取元数据并自动转换为小写
+    - name: Extract Docker metadata
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/${{ github.repository }}
+
+    # 修改步骤：使用上一步生成的元数据
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
-        # 关键修正：指定 Dockerfile 所在的目录
-        context: ./docker 
+        context: ./docker
         push: true
-        tags: ghcr.io/${{ github.repository }}:latest
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
